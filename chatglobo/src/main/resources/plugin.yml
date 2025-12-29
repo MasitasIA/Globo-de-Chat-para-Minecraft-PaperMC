@@ -1,0 +1,6 @@
+name: ChatGlobo
+version: 1.0.0
+main: com.masitas.chatglobo.Main
+api-version: 1.21
+authors: [Masitas]
+description: Muestra globos de texto automáticamente al chatear
