@@ -1,6 +1,18 @@
 name: ChatGlobo
-version: 1.0.0
+version: 2.0.0
 main: com.masitas.chatglobo.Main
 api-version: 1.21
 authors: [Masitas]
 description: Muestra globos de texto automáticamente al chatear
+commands:
+  globo:
+    description: Activa o desactiva tus propios globos
+    usage: /globo
+  globoglobal:
+    description: Admin - Activa o desactiva el plugin para todos
+    usage: /globoglobal
+    permission: chatglobo.admin
+  globoaltura:
+    description: Admin - Ajusta la altura del globo
+    usage: /globoaltura <numero>
+    permission: chatglobo.admin

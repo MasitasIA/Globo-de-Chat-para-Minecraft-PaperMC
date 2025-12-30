@@ -1,0 +1,12 @@
+# Configuración de ChatGlobo
+
+# Interruptor general del plugin (true = activado, false = desactivado)
+global-activo: true
+
+# Altura del globo sobre la cabeza del jugador (en bloques)
+# 0.625 es ideal para estar pegado a la cabeza sin tocarla
+altura-globo: 0.625
+
+# Lista de jugadores que tienen el globo desactivado personalmente
+# (No toques esto manualmente, se llena solo con comandos)
+usuarios-ocultos: []
