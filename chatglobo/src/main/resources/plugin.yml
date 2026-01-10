@@ -1,5 +1,5 @@
 name: ChatGlobo
-version: 3.0
+version: 3.1
 main: com.masitas.chatglobo.Main
 api-version: 1.21
 authors: [MasitasIA]
@@ -15,4 +15,16 @@ commands:
   globoaltura:
     description: Admin - Ajusta la altura del globo
     usage: /globoaltura <numero>
+    permission: chatglobo.admin
+  globoclear:
+    description: Admin - Limpia todos los globos activos
+    usage: /globoclear
+    permission: chatglobo.admin
+  globomute:
+    description: Admin - Silencia a un jugador para que no pueda usar globos
+    usage: /globomute <jugador>
+    permission: chatglobo.admin
+  globotiempo:
+    description: Admin - Ajusta el tiempo de duración de los globos
+    usage: /globotiempo <segundos>
     permission: chatglobo.admin

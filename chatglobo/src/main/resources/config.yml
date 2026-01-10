@@ -7,6 +7,13 @@ global-activo: true
 # 0.625 es ideal para estar pegado a la cabeza sin tocarla
 altura-globo: 0.625
 
+# Duración del globo en segundos antes de desaparecer
+tiempo-vida: 5
+
 # Lista de jugadores que tienen el globo desactivado personalmente
 # (No toques esto manualmente, se llena solo con comandos)
 usuarios-ocultos: []
+
+# Lista de jugadores que están muteados y no pueden usar globos
+# (No toques esto manualmente, se llena solo con comandos)
+usuarios-muteados: []
