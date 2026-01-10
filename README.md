@@ -1,5 +1,8 @@
 # 🎈 ChatGlobo
 
+![Demostración del Plugin](PORTADA.png)
+*El globo de texto se muestra al escribir cualquier texto mientras seas visible.*
+
 **ChatGlobo** es un plugin moderno y ligero para servidores **PaperMC (1.21)** que muestra burbujas de texto flotantes sobre las cabezas de los jugadores cuando escriben en el chat.
 
 Diseñado para mejorar la interacción social y el roleplay, utilizando las nuevas **Display Entities** de Minecraft para un rendimiento máximo sin lag.
@@ -48,4 +51,4 @@ usuarios-ocultos: []
 ```
 
 ---
-Creado por **Masitas**.
+Creado por **MasitasIA**.

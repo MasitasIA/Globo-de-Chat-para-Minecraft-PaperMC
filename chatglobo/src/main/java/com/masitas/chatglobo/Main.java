@@ -158,6 +158,15 @@ public class Main extends JavaPlugin implements Listener {
 
     // --- MÉTODOS ---
     private void spawnGlobo(Player player, Component texto) {
+        // Bloquear si está en modo espectador
+        if (player.getGameMode() == org.bukkit.GameMode.SPECTATOR) return;
+        
+        // Bloquear si tiene metadata de vanish (Essentials, SuperVanish, etc)
+        if (player.hasMetadata("vanished")) return;
+
+        // Bloquear si es invisible (pociones o efectos)
+        if (player.isInvisible()) return;
+
         if (!player.getPassengers().isEmpty()) {
             player.getPassengers().forEach(p -> {
                 if (p instanceof TextDisplay) p.remove();
@@ -172,7 +181,6 @@ public class Main extends JavaPlugin implements Listener {
         display.setBillboard(Display.Billboard.CENTER);
 
         Transformation transformacion = display.getTransformation();
-        // Aquí usamos la variable "alturaGlobo" en lugar del número fijo
         transformacion.getTranslation().set(0, (float) alturaGlobo, 0); 
         display.setTransformation(transformacion);
 
