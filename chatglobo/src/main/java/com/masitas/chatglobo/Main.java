@@ -20,6 +20,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Transformation;
 import org.jetbrains.annotations.NotNull;
+import java.util.regex.Pattern;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -31,28 +32,31 @@ public class Main extends JavaPlugin implements Listener {
 
     // --- VARIABLES ---
     private boolean globalActivo = true;
-    private double alturaGlobo = 0.625;
-    private int tiempoVida = 5; // Tiempo por defecto en segundos
+    private double alturaGlobo = 0.05;
+    private int tiempoVida = 5;
+    private double separacionExtra = 0.05; 
     
-    // Lista 1: Preferencia del usuario
+    // Listas
     private final Set<UUID> usuariosOcultos = new HashSet<>();
-    // Lista 2: Castigo de admin
     private final Set<UUID> usuariosMuteados = new HashSet<>(); 
+    private final Pattern patronColores = Pattern.compile("&[0-9a-fk-or]", Pattern.CASE_INSENSITIVE);
 
     // --- INICIO Y CIERRE ---
     @Override
     public void onEnable() {
         saveDefaultConfig();
         
+        // Cargar configuración
         globalActivo = getConfig().getBoolean("global-activo", true);
         alturaGlobo = getConfig().getDouble("altura-globo", 0.625);
-        tiempoVida = getConfig().getInt("tiempo-vida", 5); // Cargar tiempo
+        tiempoVida = getConfig().getInt("tiempo-vida", 5);
+        separacionExtra = getConfig().getDouble("separacion-extra", 0.05); 
         
         cargarLista("usuarios-ocultos", usuariosOcultos);
         cargarLista("usuarios-muteados", usuariosMuteados);
 
         getServer().getPluginManager().registerEvents(this, this);
-        getLogger().info("¡ChatGlobo cargado! Duración configurada: " + tiempoVida + "s");
+        getLogger().info("¡ChatGlobo cargado! Modo Zona de Seguridad activo.");
     }
 
     @Override
@@ -73,7 +77,8 @@ public class Main extends JavaPlugin implements Listener {
     private void guardarDatos() {
         getConfig().set("global-activo", globalActivo);
         getConfig().set("altura-globo", alturaGlobo);
-        getConfig().set("tiempo-vida", tiempoVida); // Guardar tiempo
+        getConfig().set("tiempo-vida", tiempoVida);
+        getConfig().set("separacion-extra", separacionExtra); 
         
         List<String> listaOcultos = new ArrayList<>();
         for (UUID uuid : usuariosOcultos) listaOcultos.add(uuid.toString());
@@ -89,125 +94,90 @@ public class Main extends JavaPlugin implements Listener {
     // --- COMANDOS ---
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        
-        // 1. GLOBAL (Admin)
         if (command.getName().equalsIgnoreCase("globoglobal")) {
-            if (!sender.hasPermission("chatglobo.admin")) {
-                sender.sendMessage(Component.text("No tienes permiso.", NamedTextColor.RED));
-                return true;
-            }
+            if (!sender.hasPermission("chatglobo.admin")) return noPermiso(sender);
             globalActivo = !globalActivo; 
             guardarDatos(); 
-            if (globalActivo) getServer().broadcast(Component.text("🎈 Globos de chat ACTIVADOS globalmente.", NamedTextColor.GREEN));
+            if (globalActivo) getServer().broadcast(Component.text("🎈 Globos ACTIVADOS globalmente.", NamedTextColor.GREEN));
             else {
-                getServer().broadcast(Component.text("🎈 Globos de chat DESACTIVADOS globalmente.", NamedTextColor.RED));
+                getServer().broadcast(Component.text("🎈 Globos DESACTIVADOS globalmente.", NamedTextColor.RED));
                 limpiarTodosLosGlobos();
             }
             return true;
         }
 
-        // 2. ALTURA (Admin)
         if (command.getName().equalsIgnoreCase("globoaltura")) {
-            if (!sender.hasPermission("chatglobo.admin")) {
-                sender.sendMessage(Component.text("No tienes permiso.", NamedTextColor.RED));
-                return true;
-            }
-            if (args.length == 0) {
-                 sender.sendMessage(Component.text("Uso: /globoaltura <numero>", NamedTextColor.RED));
-                 return true;
-            }
+            if (!sender.hasPermission("chatglobo.admin")) return noPermiso(sender);
+            if (args.length == 0) return true;
             try {
                 alturaGlobo = Double.parseDouble(args[0]);
                 guardarDatos();
-                sender.sendMessage(Component.text("🎈 Altura guardada: " + alturaGlobo, NamedTextColor.GREEN));
-            } catch (NumberFormatException e) {
-                sender.sendMessage(Component.text("Error: Número inválido.", NamedTextColor.RED));
-            }
+                sender.sendMessage(Component.text("🎈 Altura base: " + alturaGlobo, NamedTextColor.GREEN));
+            } catch (NumberFormatException e) { }
             return true;
         }
 
-        // 3. TIEMPO (Admin) - NUEVO COMANDO
         if (command.getName().equalsIgnoreCase("globotiempo")) {
-            if (!sender.hasPermission("chatglobo.admin")) {
-                sender.sendMessage(Component.text("No tienes permiso.", NamedTextColor.RED));
-                return true;
-            }
-
-            // Si está vacío, resetear a 5 segundos
-            if (args.length == 0) {
-                tiempoVida = 5;
-                guardarDatos();
-                sender.sendMessage(Component.text("🎈 Tiempo restaurado al defecto: 5 segundos.", NamedTextColor.GREEN));
-                return true;
-            }
-
+            if (!sender.hasPermission("chatglobo.admin")) return noPermiso(sender);
+            if (args.length == 0) return true;
             try {
-                int nuevosSegundos = Integer.parseInt(args[0]);
-                if (nuevosSegundos < 1) nuevosSegundos = 1; // Mínimo 1 segundo
-                
-                tiempoVida = nuevosSegundos;
+                int val = Integer.parseInt(args[0]);
+                if (val < 1) val = 1;
+                tiempoVida = val;
                 guardarDatos();
-                sender.sendMessage(Component.text("🎈 Los globos ahora durarán " + tiempoVida + " segundos.", NamedTextColor.GREEN));
-            } catch (NumberFormatException e) {
-                sender.sendMessage(Component.text("Error: Debes poner un número entero.", NamedTextColor.RED));
-            }
+                sender.sendMessage(Component.text("🎈 Tiempo: " + tiempoVida + "s", NamedTextColor.GREEN));
+            } catch (NumberFormatException e) { }
             return true;
         }
 
-        // 4. MUTE (Admin)
-        if (command.getName().equalsIgnoreCase("globomute")) {
-            if (!sender.hasPermission("chatglobo.admin")) {
-                sender.sendMessage(Component.text("No tienes permiso.", NamedTextColor.RED));
-                return true;
-            }
+        if (command.getName().equalsIgnoreCase("globoseparacion")) {
+            if (!sender.hasPermission("chatglobo.admin")) return noPermiso(sender);
             if (args.length == 0) {
-                sender.sendMessage(Component.text("Uso: /globomute <jugador>", NamedTextColor.RED));
+                sender.sendMessage(Component.text("Actual: " + separacionExtra, NamedTextColor.YELLOW));
                 return true;
             }
+            try {
+                separacionExtra = Double.parseDouble(args[0]);
+                guardarDatos();
+                sender.sendMessage(Component.text("🎈 Separación: " + separacionExtra, NamedTextColor.GREEN));
+            } catch (NumberFormatException e) { }
+            return true;
+        }
+
+        if (command.getName().equalsIgnoreCase("globomute")) {
+            if (!sender.hasPermission("chatglobo.admin")) return noPermiso(sender);
+            if (args.length == 0) return true;
             Player target = Bukkit.getPlayer(args[0]);
-            if (target == null) {
-                sender.sendMessage(Component.text("Jugador no encontrado.", NamedTextColor.RED));
-                return true;
-            }
-            
+            if (target == null) return true;
             UUID id = target.getUniqueId();
             if (usuariosMuteados.contains(id)) {
                 usuariosMuteados.remove(id);
-                sender.sendMessage(Component.text("🎈 Has DESMUTEADO a " + target.getName(), NamedTextColor.GREEN));
-                target.sendMessage(Component.text("🎈 Un admin ha permitido tus globos de nuevo.", NamedTextColor.GREEN));
+                sender.sendMessage(Component.text("🎈 DESMUTEADO: " + target.getName(), NamedTextColor.GREEN));
             } else {
                 usuariosMuteados.add(id);
-                sender.sendMessage(Component.text("🎈 Has MUTEADO a " + target.getName(), NamedTextColor.RED));
-                target.sendMessage(Component.text("🎈 Un admin ha bloqueado tus globos de chat.", NamedTextColor.RED));
+                sender.sendMessage(Component.text("🎈 MUTEADO: " + target.getName(), NamedTextColor.RED));
             }
             guardarDatos();
             return true;
         }
 
-        // 5. CLEAR (Admin)
         if (command.getName().equalsIgnoreCase("globoclear")) {
             if (!sender.hasPermission("chatglobo.admin")) return true;
-            int n = limpiarTodosLosGlobos();
-            sender.sendMessage(Component.text("🎈 Eliminados " + n + " globos.", NamedTextColor.GREEN));
+            limpiarTodosLosGlobos();
             return true;
         }
 
-        // 6. PERSONAL (Jugador)
         if (command.getName().equalsIgnoreCase("globo")) {
             if (!(sender instanceof Player player)) return true;
             UUID id = player.getUniqueId();
-            
-            if (usuariosMuteados.contains(id)) {
-                player.sendMessage(Component.text("❌ Tus globos están bloqueados por un administrador.", NamedTextColor.RED));
-                return true;
-            }
+            if (usuariosMuteados.contains(id)) return true;
             
             if (usuariosOcultos.contains(id)) {
                 usuariosOcultos.remove(id);
-                player.sendMessage(Component.text("🎈 Globos personales ACTIVADOS.", NamedTextColor.GREEN));
+                player.sendMessage(Component.text("🎈 ACTIVADO.", NamedTextColor.GREEN));
             } else {
                 usuariosOcultos.add(id);
-                player.sendMessage(Component.text("🎈 Globos personales DESACTIVADOS.", NamedTextColor.YELLOW));
+                player.sendMessage(Component.text("🎈 DESACTIVADO.", NamedTextColor.YELLOW));
             }
             guardarDatos();
             return true;
@@ -215,23 +185,28 @@ public class Main extends JavaPlugin implements Listener {
         return false;
     }
 
-    // --- EVENTOS ---
+    private boolean noPermiso(CommandSender sender) {
+        sender.sendMessage(Component.text("No tienes permiso.", NamedTextColor.RED));
+        return true;
+    }
+
     @EventHandler
     public void alChatear(AsyncChatEvent event) {
         if (!globalActivo) return;
-        UUID uuid = event.getPlayer().getUniqueId();
-        
-        if (usuariosMuteados.contains(uuid)) return;
-        if (usuariosOcultos.contains(uuid)) return;
+        if (usuariosMuteados.contains(event.getPlayer().getUniqueId())) return;
+        if (usuariosOcultos.contains(event.getPlayer().getUniqueId())) return;
 
         Player player = event.getPlayer();
-        String mensajePlano = PlainTextComponentSerializer.plainText().serialize(event.message());
-        Component mensajeConColores = LegacyComponentSerializer.legacyAmpersand().deserialize(mensajePlano);
+        
+        String textoCrudo = PlainTextComponentSerializer.plainText().serialize(event.message());
+        
+        Component mensajeConColores = LegacyComponentSerializer.legacyAmpersand().deserialize(textoCrudo);
 
-        getServer().getScheduler().runTask(this, () -> spawnGlobo(player, mensajeConColores));
+        String textoLimpio = patronColores.matcher(textoCrudo).replaceAll("");
+
+        getServer().getScheduler().runTask(this, () -> spawnGlobo(player, mensajeConColores, textoLimpio));
     }
 
-    // --- AUXILIARES ---
     private int limpiarTodosLosGlobos() {
         int c = 0;
         for (Player p : Bukkit.getOnlinePlayers()) {
@@ -246,30 +221,102 @@ public class Main extends JavaPlugin implements Listener {
         return c;
     }
 
-    private void spawnGlobo(Player player, Component texto) {
+    // Cálculo de líneas según el ancho en píxeles
+    private int calcularLineasExactas(String texto, int anchoLimite) {
+        if (texto == null || texto.isEmpty()) return 1;
+        
+        int lineas = 1;
+        int pixelesLineaActual = 0;
+        
+        String[] palabras = texto.split(" ");
+        
+        for (String palabra : palabras) {
+            int anchoPalabra = 0;
+            for (char c : palabra.toCharArray()) {
+                anchoPalabra += obtenerAnchoPixel(c);
+            }
+            
+            int espacio = (pixelesLineaActual == 0) ? 0 : 4;
+            
+            if (pixelesLineaActual + espacio + anchoPalabra <= anchoLimite) {
+                pixelesLineaActual += espacio + anchoPalabra;
+            } else {
+                lineas++;
+                pixelesLineaActual = anchoPalabra;
+            }
+        }
+        return lineas;
+    }
+
+    private int obtenerAnchoPixel(char c) {
+        if (c == ' ') return 4;
+        if (c == 'i' || c == '!' || c == '.' || c == ',' || c == ':' || c == ';' || c == '|' || c == '\'') return 2;
+        if (c == 'l' || c == '`' || c == '[' || c == ']') return 3;
+        if (c == 'I' || c == 't' || c == '(' || c == ')') return 4;
+        if (c == '@' || c == '~') return 7; 
+        return 6;
+    }
+
+    private void spawnGlobo(Player player, Component textoComponent, String textoPlano) {
         if (player.getGameMode() == org.bukkit.GameMode.SPECTATOR) return;
         if (player.hasMetadata("vanished")) return;
         if (player.isInvisible()) return;
 
-        if (!player.getPassengers().isEmpty()) {
-            player.getPassengers().forEach(p -> {
-                if (p instanceof TextDisplay) p.remove();
-            });
+        // --- CONFIGURACIÓN DE SEGURIDAD ---
+        int anchoEntidad = 200;  // Ancho REAL del globo en el juego
+        int anchoCalculo = 170;  // Ancho REDUCIDO para el cálculo matemático (Zona de Seguridad)
+
+        float alturaPorLinea = 0.25f; // Altura un poco más generosa (0.25 bloque = 1/4 bloque)
+        float paddingBase = 0.2f;     // Margen fijo de seguridad (arriba y abajo)
+
+        int maxGlobos = 3;
+
+        // 1. CÁLCULO
+        int lineasReales = calcularLineasExactas(textoPlano, anchoCalculo);
+        
+        float alturaNuevoGlobo = (lineasReales * alturaPorLinea) + paddingBase;
+        float empujeRequerido = alturaNuevoGlobo + (float) separacionExtra; 
+
+        // 2. MOVER VIEJOS
+        List<Entity> pasajeros = new ArrayList<>(player.getPassengers());
+        List<TextDisplay> globosViejos = new ArrayList<>();
+
+        for (Entity p : pasajeros) {
+            if (p instanceof TextDisplay td) {
+                globosViejos.add(td);
+            }
         }
 
+        while (globosViejos.size() >= maxGlobos) {
+            globosViejos.get(0).remove();
+            globosViejos.remove(0);
+        }
+
+        for (TextDisplay viejo : globosViejos) {
+            Transformation t = viejo.getTransformation();
+            float nuevaY = t.getTranslation().y() + empujeRequerido;
+            t.getTranslation().set(0, nuevaY, 0);
+            viejo.setInterpolationDuration(3);
+            viejo.setTransformation(t);
+        }
+
+        // 3. GENERAR NUEVO
         Location loc = player.getLocation();
         TextDisplay display = (TextDisplay) player.getWorld().spawnEntity(loc, EntityType.TEXT_DISPLAY);
-        display.text(texto);
+
+        display.text(textoComponent);
+        display.setLineWidth(anchoEntidad); // Usamos el ancho REAL (200) para mostrarlo
         display.setBackgroundColor(Color.fromARGB(160, 0, 0, 0));
+        display.setAlignment(TextDisplay.TextAlignment.CENTER); 
         display.setBillboard(Display.Billboard.CENTER);
 
-        Transformation t = display.getTransformation();
-        t.getTranslation().set(0, (float) alturaGlobo, 0); 
-        display.setTransformation(t);
+        Transformation transformacion = display.getTransformation();
+        float mitadAltura = alturaNuevoGlobo / 2.0f;
+        transformacion.getTranslation().set(0, (float) alturaGlobo + mitadAltura, 0); 
+        display.setTransformation(transformacion);
 
         player.addPassenger(display);
         
-        // AQUI ESTA EL CAMBIO: Convertimos segundos a ticks (segundos * 20)
         long ticksVida = tiempoVida * 20L;
         getServer().getScheduler().runTaskLater(this, display::remove, ticksVida);
     }

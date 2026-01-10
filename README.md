@@ -30,7 +30,10 @@ Diseñado para mejorar la interacción social y el roleplay, utilizando las nuev
 | :--- | :--- | :--- |
 | `/globoglobal` | Activa o desactiva el plugin para **todos** en el servidor. | `chatglobo.admin` |
 | `/globoaltura <n>` | Define la altura del globo (ej. `0.625`). Se guarda automáticamente. | `chatglobo.admin` |
-
+| `/globoclear` | Borra todos los globos de textos en el mundo. | `chatglobo.admin` |
+| `/globomute <jugador>` | Mutea los globos de texto de un jugador. | `chatglobo.admin` |
+| `/globotiempo <segundos>` | Define el tiempo que se muestran los globos de texto. | `chatglobo.admin` |
+| `/globoseparacion <n>` | Define la separación entre globo y globo apilados (ej. `0.1`). | `chatglobo.admin` |
 ---
 
 ## ⚙️ Configuración (`config.yml`)
@@ -43,11 +46,21 @@ global-activo: true
 
 # Altura del globo sobre la cabeza del jugador (en bloques)
 # 0.625 es ideal para estar pegado a la cabeza sin tocarla
-altura-globo: 0.625
+altura-globo: 0.05
+
+# Duración del globo en segundos antes de desaparecer
+tiempo-vida: 5
+
+# Separación extra entre globos apilados (en bloques)
+separacion-extra: 0.05
 
 # Lista de jugadores que tienen el globo desactivado personalmente
-# (No editar manualmente)
+# (No toques esto manualmente, se llena solo con comandos)
 usuarios-ocultos: []
+
+# Lista de jugadores que están muteados y no pueden usar globos
+# (No toques esto manualmente, se llena solo con comandos)
+usuarios-muteados: []
 ```
 
 ---
