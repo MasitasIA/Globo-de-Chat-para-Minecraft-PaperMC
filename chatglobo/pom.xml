@@ -4,8 +4,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.masitas</groupId>
-    <artifactId>chatglobo</artifactId>
-    <version>3.2-SNAPSHOT</version>
+    <artifactId>ChatGlobo</artifactId>
+    <version>4.0</version>
     <packaging>jar</packaging>
 
     <name>ChatGlobo</name>

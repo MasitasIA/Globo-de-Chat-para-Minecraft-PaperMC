@@ -1,5 +1,5 @@
 name: ChatGlobo
-version: 3.2
+version: 4.0
 main: com.masitas.chatglobo.Main
 api-version: 1.21
 authors: [MasitasIA]
@@ -28,7 +28,11 @@ commands:
     description: Admin - Ajusta el tiempo de duración de los globos
     usage: /globotiempo <segundos>
     permission: chatglobo.admin
-  globoseparacion:
-    description: Admin - Define la distancia entre globos apilados
-    usage: /globoseparacion <numero>
+  globospawn:
+    description: Admin - Crea un globo donde estás mirando
+    usage: /globospawn <texto>
+    permission: chatglobo.admin
+  globoreload:
+    description: Admin - Recarga la configuración (config.yml)
+    usage: /globoreload
     permission: chatglobo.admin
