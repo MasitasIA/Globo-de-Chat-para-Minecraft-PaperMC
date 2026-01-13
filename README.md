@@ -1,11 +1,30 @@
 # 🎈 ChatGlobo
 
+![Badge de Build](https://img.shields.io/badge/Build-Maven-orange)
+![Badge de Version](https://img.shields.io/badge/Minecraft-1.21-brightgreen)
+
 ![Demostración del Plugin](PORTADA.png)
 *El globo de texto se muestra al escribir cualquier texto mientras seas visible.*
 
 **ChatGlobo** es un plugin moderno y ligero para servidores **PaperMC (1.21)** que muestra burbujas de texto flotantes sobre las cabezas de los jugadores cuando escriben en el chat.
 
 Diseñado para mejorar la interacción social y el roleplay, utilizando las nuevas **Display Entities** de Minecraft para un rendimiento máximo sin lag.
+
+---
+
+## 📋 Compatibilidad
+
+ChatGlobo utiliza tecnología moderna que no está disponible en versiones antiguas de Minecraft.
+
+| Versión de Minecraft | Estado | ChatGlobo Recomendado |
+| :--- | :--- | :--- |
+| **1.21.x** | ✅ **Soportado** | Última Versión (v2.5.0+) |
+| **1.20.x** | ⚠️ Experimental | v2.0.0 |
+| **1.19.4 e inferiores** | ❌ No Soportado | N/A |
+
+> **⚠️ Advertencia:** Este plugin requiere **PaperMC** (o forks como Purpur/Folia). **No funcionará en Spigot clásico ni en CraftBukkit.**
+
+---
 
 ## ✨ Características Principales
 
@@ -15,6 +34,15 @@ Diseñado para mejorar la interacción social y el roleplay, utilizando las nuev
 * **📏 Altura Ajustable en Vivo:** ¿El globo está muy alto o muy bajo? ¡Cámbialo con un comando sin reiniciar!
 * **💾 Persistencia de Datos:** El plugin recuerda tus configuraciones (quién ocultó el globo, la altura definida) incluso después de reiniciar el servidor.
 * **🛡️ Control Total:** Comandos para administradores (apagado global) y para usuarios (apagado personal).
+
+---
+
+## 📥 Instalación
+
+1.  Descarga el archivo `.jar` más reciente desde la pestaña de [**Releases**](https://github.com/MasitasIA/Globo-de-Chat-para-Minecraft-PaperMC/releases).
+2.  Coloca el archivo en la carpeta `/plugins` de tu servidor.
+3.  Reinicia el servidor o usa un gestor de plugins.
+4.  ¡Listo! El archivo `config.yml` se generará automáticamente.
 
 ---
 
