@@ -1,5 +1,5 @@
 name: ChatGlobo
-version: 4.0
+version: 4.1
 main: com.masitas.chatglobo.Main
 api-version: 1.21
 authors: [MasitasIA]
@@ -35,4 +35,8 @@ commands:
   globoreload:
     description: Admin - Recarga la configuración (config.yml)
     usage: /globoreload
+    permission: chatglobo.admin
+  globodelay:
+    description: Admin - Ajusta el delay de aparición
+    usage: /globodelay <ticks>
     permission: chatglobo.admin

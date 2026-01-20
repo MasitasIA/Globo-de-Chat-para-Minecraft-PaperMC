@@ -39,6 +39,7 @@ public class Main extends JavaPlugin implements Listener {
     private boolean globalActivo = true;
     private double alturaGlobo = 0.25;
     private int tiempoVida = 5;
+    private long ticksAparicion = 1; 
     
     // --- LISTAS ---
     private final Set<UUID> usuariosOcultos = new HashSet<>();
@@ -71,7 +72,11 @@ public class Main extends JavaPlugin implements Listener {
         globalActivo = getConfig().getBoolean("global-activo", true);
         alturaGlobo = getConfig().getDouble("altura-globo", 0.25);
         tiempoVida = getConfig().getInt("tiempo-vida", 5);
+        ticksAparicion = getConfig().getLong("ticks-aparicion", 10); // Cargamos el delay
         
+        // Evitar números negativos
+        if (ticksAparicion < 0) ticksAparicion = 0;
+
         usuariosOcultos.clear();
         usuariosMuteados.clear();
         cargarLista("usuarios-ocultos", usuariosOcultos);
@@ -91,6 +96,7 @@ public class Main extends JavaPlugin implements Listener {
         getConfig().set("global-activo", globalActivo);
         getConfig().set("altura-globo", alturaGlobo);
         getConfig().set("tiempo-vida", tiempoVida);
+        getConfig().set("ticks-aparicion", ticksAparicion); // Guardamos el delay
         
         List<String> listaOcultos = new ArrayList<>();
         for (UUID uuid : usuariosOcultos) listaOcultos.add(uuid.toString());
@@ -168,7 +174,7 @@ public class Main extends JavaPlugin implements Listener {
             return true;
         }
 
-        // Tiempo
+        // Tiempo Vida
         if (command.getName().equalsIgnoreCase("globotiempo")) {
             if (!sender.hasPermission("chatglobo.admin")) return noPermiso(sender);
             if (args.length == 0) return true;
@@ -177,7 +183,24 @@ public class Main extends JavaPlugin implements Listener {
                 if (val < 1) val = 1;
                 tiempoVida = val;
                 guardarDatos();
-                sender.sendMessage(Component.text("🎈 Tiempo: " + tiempoVida + "s", NamedTextColor.GREEN));
+                sender.sendMessage(Component.text("🎈 Tiempo vida: " + tiempoVida + "s", NamedTextColor.GREEN));
+            } catch (NumberFormatException e) { }
+            return true;
+        }
+
+        // NUEVO: Tiempo Delay (Aparición)
+        if (command.getName().equalsIgnoreCase("globodelay")) {
+            if (!sender.hasPermission("chatglobo.admin")) return noPermiso(sender);
+            if (args.length == 0) {
+                sender.sendMessage(Component.text("Uso: /globodelay <ticks> (20 ticks = 1 seg)", NamedTextColor.RED));
+                return true;
+            }
+            try {
+                long val = Long.parseLong(args[0]);
+                if (val < 0) val = 0;
+                ticksAparicion = val;
+                guardarDatos();
+                sender.sendMessage(Component.text("🎈 Delay aparición: " + ticksAparicion + " ticks", NamedTextColor.GREEN));
             } catch (NumberFormatException e) { }
             return true;
         }
@@ -232,7 +255,6 @@ public class Main extends JavaPlugin implements Listener {
         if (usuariosOcultos.contains(event.getPlayer().getUniqueId())) return;
 
         Player player = event.getPlayer();
-        // Solo necesitamos el texto para mostrar, ya no para medir
         String textoCrudo = PlainTextComponentSerializer.plainText().serialize(event.message());
         Component mensaje = serializer.deserialize(textoCrudo);
 
@@ -276,18 +298,40 @@ public class Main extends JavaPlugin implements Listener {
     private void spawnGloboJugador(Player player, Component textoComponent) {
         if (player.getGameMode() == GameMode.SPECTATOR || player.hasMetadata("vanished") || player.isInvisible()) return;
 
+        // Limpiar anterior inmediatamente
         for (Entity e : player.getPassengers()) {
             if (e instanceof TextDisplay) e.remove();
         }
 
-        TextDisplay display = crearGloboBase(player.getLocation(), textoComponent);
-
-        Transformation transformacion = display.getTransformation();
-        transformacion.getTranslation().set(0, (float) alturaGlobo, 0);
-        display.setTransformation(transformacion);
+        // 1. Nace TOTALMENTE INVISIBLE
+        TextDisplay display = player.getWorld().spawn(player.getLocation(), TextDisplay.class, entity -> {
+            entity.setVisibleByDefault(false);
+            
+            entity.text(textoComponent);
+            entity.setLineWidth(ANCHO_GLOBO);
+            entity.setBackgroundColor(Color.fromARGB(160, 0, 0, 0));
+            entity.setAlignment(TextDisplay.TextAlignment.CENTER);
+            entity.setBillboard(Display.Billboard.CENTER);
+            
+            // Transformación
+            Transformation transformacion = entity.getTransformation();
+            transformacion.getTranslation().set(0, (float) alturaGlobo, 0);
+            entity.setTransformation(transformacion);
+        });
 
         player.addPassenger(display);
-        getServer().getScheduler().runTaskLater(this, display::remove, tiempoVida * 20L);
+
+        // 2. Usamos 'ticksAparicion' desde la config
+        getServer().getScheduler().runTaskLater(this, () -> {
+            if (!display.isDead() && player.isOnline()) {
+                for (Player online : Bukkit.getOnlinePlayers()) {
+                    online.showEntity(this, display);
+                }
+            }
+        }, ticksAparicion);
+
+        // 3. Programar su muerte (Vida + Delay)
+        getServer().getScheduler().runTaskLater(this, display::remove, (tiempoVida * 20L) + ticksAparicion);
     }
 
     // --- Spawn de globo estático ---

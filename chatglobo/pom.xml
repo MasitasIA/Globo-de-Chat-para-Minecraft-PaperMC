@@ -5,7 +5,7 @@
 
     <groupId>com.masitas</groupId>
     <artifactId>ChatGlobo</artifactId>
-    <version>4.0</version>
+    <version>4.1</version>
     <packaging>jar</packaging>
 
     <name>ChatGlobo</name>

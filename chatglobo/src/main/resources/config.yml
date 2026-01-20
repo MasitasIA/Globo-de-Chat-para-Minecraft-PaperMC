@@ -10,6 +10,9 @@ altura-globo: 0.25
 # Duración del globo en segundos antes de desaparecer
 tiempo-vida: 5
 
+# Duración de la animación de aparición/desaparición en ticks (20 ticks = 1 segundo)
+ticks-aparicion: 1
+
 # Lista de jugadores que tienen el globo desactivado personalmente
 # (No toques esto manualmente, se llena solo con comandos)
 usuarios-ocultos: []
