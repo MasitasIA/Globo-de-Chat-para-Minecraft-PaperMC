@@ -256,9 +256,14 @@ public class Main extends JavaPlugin implements Listener {
 
         Player player = event.getPlayer();
         String textoCrudo = PlainTextComponentSerializer.plainText().serialize(event.message());
-        Component mensaje = serializer.deserialize(textoCrudo);
+        
+        Component mensajeFinal = Component.text()
+                .append(Component.text(player.getName(), NamedTextColor.YELLOW))
+                .append(Component.text(" dice: ", NamedTextColor.GRAY))   
+                .append(serializer.deserialize(textoCrudo))                      
+                .build();
 
-        getServer().getScheduler().runTask(this, () -> spawnGloboJugador(player, mensaje));
+        getServer().getScheduler().runTask(this, () -> spawnGloboJugador(player, mensajeFinal));
     }
 
     // --- Limpieza ---
